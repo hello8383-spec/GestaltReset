@@ -1,0 +1,217 @@
+workflows:
+  ios-unsigned-ipa:
+    name: Build Unsigned GestaltReset IPA
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    environment:
+      xcode: latest
+    scripts:
+      - name: Generate Xcode Project & Scheme with App Groups
+        script: |
+          rm -rf GestaltReset.xcodeproj
+          mkdir -p GestaltReset.xcodeproj/xcshareddata/xcschemes
+
+          cat << 'EOF' > GestaltReset.xcodeproj/project.pbxproj
+          // !$*UTF8*$!
+          {
+            archiveVersion = 1;
+            classes = {
+            };
+            objectVersion = 56;
+            objects = {
+              A10000010000000000000001 /* GestaltResetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* GestaltResetApp.swift */; };
+              A10000020000000000000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020000000000000001 /* ContentView.swift */; };
+              A10000030000000000000001 /* worse_query.m in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000001 /* worse_query.m */; };
+
+              A20000000000000000000001 /* GestaltReset.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GestaltReset.app; sourceTree = BUILT_PRODUCTS_DIR; };
+              A20000010000000000000001 /* GestaltResetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GestaltResetApp.swift; sourceTree = "<group>"; };
+              A20000020000000000000001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+              A20000030000000000000001 /* worse_query.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = worse_query.m; sourceTree = "<group>"; };
+              A20000040000000000000001 /* worse_query.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = worse_query.h; sourceTree = "<group>"; };
+              A20000050000000000000001 /* GestaltReset-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GestaltReset-Bridging-Header.h"; sourceTree = "<group>"; };
+              A20000060000000000000001 /* GestaltReset.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GestaltReset.entitlements; sourceTree = "<group>"; };
+
+              A30000010000000000000001 /* Frameworks */ = {
+                isa = PBXFrameworksBuildPhase;
+                buildActionMask = 2147483647;
+                files = (
+                );
+                runOnlyForDeploymentPostprocessing = 0;
+              };
+
+              A40000000000000000000001 = {
+                isa = PBXGroup;
+                children = (
+                  A40000010000000000000001 /* GestaltReset */,
+                  A40000020000000000000001 /* Products */,
+                );
+                sourceTree = "<group>";
+              };
+              A40000010000000000000001 /* GestaltReset */ = {
+                isa = PBXGroup;
+                children = (
+                  A20000010000000000000001 /* GestaltResetApp.swift */,
+                  A20000020000000000000001 /* ContentView.swift */,
+                  A20000030000000000000001 /* worse_query.m */,
+                  A20000040000000000000001 /* worse_query.h */,
+                  A20000050000000000000001 /* GestaltReset-Bridging-Header.h */,
+                  A20000060000000000000001 /* GestaltReset.entitlements */,
+                );
+                path = GestaltReset;
+                sourceTree = "<group>";
+              };
+              A40000020000000000000001 /* Products */ = {
+                isa = PBXGroup;
+                children = (
+                  A20000000000000000000001 /* GestaltReset.app */,
+                );
+                name = Products;
+                sourceTree = "<group>";
+              };
+
+              A50000010000000000000001 /* GestaltReset */ = {
+                isa = PBXNativeTarget;
+                buildConfigurationList = A80000020000000000000001 /* Build configuration list for PBXNativeTarget "GestaltReset" */;
+                buildPhases = (
+                  A70000010000000000000001 /* Sources */,
+                  A30000010000000000000001 /* Frameworks */,
+                );
+                buildRules = (
+                );
+                dependencies = (
+                );
+                name = GestaltReset;
+                productName = GestaltReset;
+                productReference = A20000000000000000000001 /* GestaltReset.app */;
+                productType = "com.apple.product-type.application";
+              };
+
+              A60000010000000000000001 /* Project object */ = {
+                isa = PBXProject;
+                attributes = {
+                  BuildIndependentTargetsInParallel = 1;
+                  LastSwiftUpdateCheck = 1600;
+                  LastUpgradeCheck = 1600;
+                  TargetAttributes = {
+                    A50000010000000000000001 = {
+                      SystemCapabilities = {
+                        com.apple.ApplicationGroups.iOS = {
+                          enabled = 1;
+                        };
+                      };
+                    };
+                  };
+                };
+                buildConfigurationList = A80000010000000000000001 /* Build configuration list for PBXProject "GestaltReset" */;
+                compatibilityVersion = "Xcode 14.0";
+                developmentRegion = en;
+                hasScannedForEncodings = 0;
+                knownRegions = (
+                  en,
+                  Base,
+                );
+                mainGroup = A40000000000000000000001;
+                productRefGroup = A40000020000000000000001 /* Products */;
+                projectDirPath = "";
+                projectRoot = "";
+                targets = (
+                  A50000010000000000000001 /* GestaltReset */,
+                );
+              };
+
+              A70000010000000000000001 /* Sources */ = {
+                isa = PBXSourcesBuildPhase;
+                buildActionMask = 2147483647;
+                files = (
+                  A10000010000000000000001 /* GestaltResetApp.swift in Sources */,
+                  A10000020000000000000001 /* ContentView.swift in Sources */,
+                  A10000030000000000000001 /* worse_query.m in Sources */,
+                );
+                runOnlyForDeploymentPostprocessing = 0;
+              };
+
+              A90000010000000000000001 /* Release */ = {
+                isa = XCBuildConfiguration;
+                buildSettings = {
+                  ALWAYS_SEARCH_USER_PATHS = NO;
+                  CLANG_ENABLE_MODULES = YES;
+                  CLANG_ENABLE_OBJC_ARC = YES;
+                  CODE_SIGNING_ALLOWED = NO;
+                  CODE_SIGNING_REQUIRED = NO;
+                  CODE_SIGN_IDENTITY = "";
+                  IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+                  SDKROOT = iphoneos;
+                  SWIFT_VERSION = 5.0;
+                  TARGETED_DEVICE_FAMILY = "1,2";
+                };
+                name = Release;
+              };
+              A90000020000000000000001 /* Release */ = {
+                isa = XCBuildConfiguration;
+                buildSettings = {
+                  CODE_SIGN_ENTITLEMENTS = GestaltReset/GestaltReset.entitlements;
+                  CODE_SIGN_STYLE = Manual;
+                  CURRENT_PROJECT_VERSION = 1;
+                  GENERATE_INFOPLIST_FILE = YES;
+                  INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+                  INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+                  INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+                  INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait";
+                  MARKETING_VERSION = 1.0;
+                  PRODUCT_BUNDLE_IDENTIFIER = com.gestaltreset.app;
+                  PRODUCT_NAME = "$(TARGET_NAME)";
+                  SWIFT_OBJC_BRIDGING_HEADER = "GestaltReset/GestaltReset-Bridging-Header.h";
+                };
+                name = Release;
+              };
+
+              A80000010000000000000001 /* Build configuration list for PBXProject "GestaltReset" */ = {
+                isa = XCConfigurationList;
+                buildConfigurations = (
+                  A90000010000000000000001 /* Release */,
+                );
+                defaultConfigurationIsVisible = 0;
+                defaultConfigurationName = Release;
+              };
+              A80000020000000000000001 /* Build configuration list for PBXNativeTarget "GestaltReset" */ = {
+                isa = XCConfigurationList;
+                buildConfigurations = (
+                  A90000020000000000000001 /* Release */,
+                );
+                defaultConfigurationIsVisible = 0;
+                defaultConfigurationName = Release;
+              };
+            };
+            rootObject = A60000010000000000000001 /* Project object */;
+          }
+          EOF
+
+          cat << 'EOF' > GestaltReset.xcodeproj/xcshareddata/xcschemes/GestaltReset.xcscheme
+          <?xml version="1.0" encoding="UTF-8"?>
+          <Scheme LastUpgradeVersion="1600" version="1.7">
+             <BuildAction parallelizeBuildables="YES" buildImplicitDependencies="YES">
+                <BuildActionEntries>
+                   <BuildActionEntry buildForTesting="YES" buildForRunning="YES" buildForProfiling="YES" buildForArchiving="YES" buildForAnalyzing="YES">
+                      <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="A50000010000000000000001" BuildableName="GestaltReset.app" BlueprintName="GestaltReset" ReferencedContainer="container:GestaltReset.xcodeproj">
+                      </BuildableReference>
+                   </BuildActionEntry>
+                </BuildActionEntries>
+             </BuildAction>
+             <ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES">
+             </ArchiveAction>
+          </Scheme>
+          EOF
+
+      - name: Build Unsigned App
+        script: |
+          xcodebuild build             -project GestaltReset.xcodeproj             -scheme GestaltReset             -configuration Release             -sdk iphoneos             -destination 'generic/platform=iOS'             -derivedDataPath build/DerivedData             CODE_SIGNING_ALLOWED=NO             CODE_SIGNING_REQUIRED=NO             CODE_SIGN_IDENTITY=""             AD_HOC_CODE_SIGNING_ALLOWED=YES
+
+      - name: Package IPA
+        script: |
+          mkdir -p build/Payload
+          cp -r build/DerivedData/Build/Products/Release-iphoneos/GestaltReset.app build/Payload/
+          cd build
+          zip -qry GestaltReset.ipa Payload
+
+    artifacts:
+      - build/GestaltReset.ipa
