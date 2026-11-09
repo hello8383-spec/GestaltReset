@@ -103,11 +103,14 @@ struct ContentView: View {
         log += line + "\n"
     }
 
-    private func withAccess<T>(_ body: (URL) throws -> T) async -> Result<T, Error> {
-        await withCheckedContinuation { continuation in
+    private func withAccess<T: Sendable>(targetPath: String? = nil, _ body: @Sendable @escaping (URL) throws -> T) async -> Result<T, Error> {
+        let resolvedPath = targetPath ?? mobileGestaltPath
+        let group = appGroup
+
+        return await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
-                let targetDir = (mobileGestaltPath as NSString).deletingLastPathComponent
-                let handle = worse_query(targetDir, appGroup, false, false)
+                let targetDir = (resolvedPath as NSString).deletingLastPathComponent
+                let handle = worse_query(targetDir, group, false, false)
 
                 guard handle >= 0 else {
                     let msg: String
@@ -127,7 +130,7 @@ struct ContentView: View {
 
                 defer { worse_query_release(handle) }
 
-                let url = URL(fileURLWithPath: mobileGestaltPath)
+                let url = URL(fileURLWithPath: resolvedPath)
                 do {
                     let result = try body(url)
                     continuation.resume(returning: .success(result))
@@ -170,25 +173,29 @@ struct ContentView: View {
         lastStatus = "Deleting…"
         appendLog("--- Delete MobileGestalt.plist ---")
 
-        _ = await withAccess { url in
+        let backupResult = await withAccess { url -> Bool in
             if let data = try? Data(contentsOf: url) {
                 let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                 let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
                 let dest = docs.appendingPathComponent("MobileGestalt-predelete-\(stamp).plist")
                 try? data.write(to: dest, options: .atomic)
-                appendLog("Pre-delete backup attempted.")
+                return true
             }
-            return ()
+            return false
+        }
+
+        if case .success(true) = backupResult {
+            appendLog("Pre-delete backup saved.")
         }
 
         let result = await withAccess { url in
             try FileManager.default.removeItem(at: url)
-            return ()
+            return true
         }
 
         switch result {
         case .success:
-            appendLog("MobileGestalt.plist deleted.")
+            appendLog("MobileGestalt.plist deleted. Reboot your device now.")
             lastStatus = "Deleted"
         case .failure(let error):
             appendLog("Delete failed: \(error.localizedDescription)")
@@ -201,36 +208,23 @@ struct ContentView: View {
     private func clearSystemGroupCaches() async {
         isBusy = true
         lastStatus = "Clearing caches…"
-        appendLog("--- Clear SystemGroup caches ---")
+        appendLog("--- Clear SystemGroup Caches ---")
 
-        let result = await withAccess { _ in
-            let root = URL(fileURLWithPath: systemGroupRoot)
-            let fm = FileManager.default
-            guard let items = try? fm.contentsOfDirectory(at: root, includingPropertiesForKeys: nil) else {
-                throw NSError(domain: "GestaltReset", code: -10, userInfo: [NSLocalizedDescriptionKey: "Could not list SystemGroup root"])
-            }
-
-            var removed = 0
+        let cachesDir = systemGroupRoot + "/Library/Caches"
+        let result = await withAccess(targetPath: cachesDir + "/placeholder") { dirFileUrl in
+            let cachesUrl = dirFileUrl.deletingLastPathComponent()
+            let items = try FileManager.default.contentsOfDirectory(at: cachesUrl, includingPropertiesForKeys: nil)
+            var count = 0
             for item in items {
-                if item.lastPathComponent == "Library" {
-                    let caches = item.appendingPathComponent("Caches")
-                    if fm.fileExists(atPath: caches.path) {
-                        if let cacheItems = try? fm.contentsOfDirectory(at: caches, includingPropertiesForKeys: nil) {
-                            for c in cacheItems {
-                                try? fm.removeItem(at: c)
-                                removed += 1
-                                appendLog("Removed: \(c.lastPathComponent)")
-                            }
-                        }
-                    }
-                }
+                try FileManager.default.removeItem(at: item)
+                count += 1
             }
-            return removed
+            return count
         }
 
         switch result {
         case .success(let count):
-            appendLog("Cleared \(count) item(s) under SystemGroup caches.")
+            appendLog("Removed \(count) item(s) from Caches. Reboot your device now.")
             lastStatus = "Caches cleared"
         case .failure(let error):
             appendLog("Clear failed: \(error.localizedDescription)")
