@@ -17,39 +17,36 @@ jobs:
           sudo xcode-select -s /Applications/Xcode.app
           xcodebuild -version
 
-      - name: Create Xcode project structure
+      - name: Verify Xcode Project
         run: |
-          # Create a minimal iOS app project that includes our sources
-          mkdir -p GestaltReset.xcodeproj
-          # We use xcodebuild with a generated project via a simple approach:
-          # Create the app using a temporary Package or just prepare sources.
-          # For a real unsigned build we need a proper .xcodeproj.
-          # This workflow assumes you have (or will add) a GestaltReset.xcodeproj.
-          echo "Sources are in GestaltReset/"
-          ls -la GestaltReset/
+          if [ ! -f "GestaltReset.xcodeproj/project.pbxproj" ]; then
+            echo "ERROR: GestaltReset.xcodeproj/project.pbxproj not found!"
+            exit 1
+          fi
 
-      - name: Note about unsigned builds
+      - name: Build Unsigned App
         run: |
-          echo "================================================"
-          echo "UNSIGNED IPA NOTE"
-          echo "================================================"
-          echo "A true unsigned IPA still needs the binary compiled for arm64."
-          echo "This runner can compile if a proper .xcodeproj exists."
-          echo "Without a full Xcode project + CODE_SIGNING_ALLOWED=NO, "
-          echo "we cannot produce a working binary here automatically."
-          echo ""
-          echo "Recommended path:"
-          echo "1. Open the sources in Xcode on a Mac"
-          echo "2. Set CODE_SIGNING_ALLOWED = NO (or Ad Hoc)"
-          echo "3. Archive / export, then re-sign with ldid / SideStore / etc."
-          echo "   and inject the App Group entitlement."
-          echo "================================================"
+          xcodebuild build \
+            -project GestaltReset.xcodeproj \
+            -scheme GestaltReset \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES
 
-      - name: Upload sources as artifact
+      - name: Package IPA
+        run: |
+          mkdir -p build/Payload
+          cp -r build/DerivedData/Build/Products/Release-iphoneos/GestaltReset.app build/Payload/
+          cd build
+          zip -qry GestaltReset.ipa Payload
+
+      - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GestaltReset-sources
-          path: |
-            GestaltReset/
-            README.md
-            LICENSE
+          name: GestaltReset-unsigned-ipa
+          path: build/GestaltReset.ipa
