@@ -1,0 +1,116 @@
+workflows:
+  ios-unsigned:
+    name: GestaltReset iOS (unsigned / ad-hoc)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      vars:
+        XCODE_WORKSPACE: ""          # set if you use a .xcworkspace
+        XCODE_PROJECT: "GestaltReset.xcodeproj"
+        XCODE_SCHEME: "GestaltReset"
+        BUNDLE_ID: "com.huami.gestultx.reset"   # change if needed
+        APP_GROUP: "group.com.huami.gestultx"
+      xcode: latest
+    scripts:
+      - name: Check sources
+        script: |
+          echo "Sources present:"
+          ls -la GestaltReset/
+          echo ""
+          echo "NOTE: This repo currently ships source files only."
+          echo "You need a real GestaltReset.xcodeproj (created in Xcode)"
+          echo "before Codemagic can compile an IPA."
+          echo "App Group required: $APP_GROUP"
+
+      - name: Create minimal project reminder
+        script: |
+          cat << 'EOF'
+          ============================================================
+          HOW TO MAKE THIS BUILD WORK
+          ============================================================
+          1. On a Mac, create a new iOS App (SwiftUI) named GestaltReset
+          2. Drop the files from the GestaltReset/ folder into the project
+          3. Set Bridging Header = GestaltReset/GestaltReset-Bridging-Header.h
+          4. Enable App Groups capability → group.com.huami.gestultx
+          5. Commit the .xcodeproj + sources to this repo
+          6. Re-run this workflow
+          ============================================================
+          EOF
+
+      # Uncomment the steps below AFTER you have a real .xcodeproj in the repo
+      #
+      # - name: Set up code signing settings on Xcode project
+      #   script: xcode-project use-profiles
+      #
+      # - name: Build IPA (unsigned / development)
+      #   script: |
+      #     xcode-project build-ipa \
+      #       --project "$XCODE_PROJECT" \
+      #       --scheme "$XCODE_SCHEME" \
+      #       --archive-flags "-destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO"
+      #
+      # - name: Export IPA path
+      #   script: |
+      #     ipa_path=$(find . -name "*.ipa" | head -1)
+      #     echo "IPA=$ipa_path" >> $CM_ENV
+      #     ls -la "$ipa_path"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - build/ios/xcarchive/*.xcarchive
+      - GestaltReset/**
+
+    publishing:
+      email:
+        recipients:
+          - $CM_BUILD_EMAIL
+        notify:
+          success: true
+          failure: true
+
+  # -------------------------------------------------------
+  # Signed build (add your certificate + profile in Codemagic UI)
+  # -------------------------------------------------------
+  ios-signed:
+    name: GestaltReset iOS (signed)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: GestaltReset   # optional, create in Codemagic UI
+    environment:
+      vars:
+        XCODE_PROJECT: "GestaltReset.xcodeproj"
+        XCODE_SCHEME: "GestaltReset"
+        BUNDLE_ID: "com.huami.gestultx.reset"
+      xcode: latest
+      ios_signing:
+        distribution_type: ad_hoc      # or development / app_store
+        bundle_identifier: com.huami.gestultx.reset
+    scripts:
+      - name: Check project exists
+        script: |
+          if [ ! -d "$XCODE_PROJECT" ]; then
+            echo "ERROR: $XCODE_PROJECT not found."
+            echo "Create the Xcode project first (see ios-unsigned workflow notes)."
+            exit 1
+          fi
+
+      - name: Set up code signing
+        script: xcode-project use-profiles
+
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+
+    publishing:
+      email:
+        recipients:
+          - $CM_BUILD_EMAIL
+        notify:
+          success: true
+          failure: true
