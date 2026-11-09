@@ -1,0 +1,55 @@
+name: Build Unsigned IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app
+          xcodebuild -version
+
+      - name: Create Xcode project structure
+        run: |
+          # Create a minimal iOS app project that includes our sources
+          mkdir -p GestaltReset.xcodeproj
+          # We use xcodebuild with a generated project via a simple approach:
+          # Create the app using a temporary Package or just prepare sources.
+          # For a real unsigned build we need a proper .xcodeproj.
+          # This workflow assumes you have (or will add) a GestaltReset.xcodeproj.
+          echo "Sources are in GestaltReset/"
+          ls -la GestaltReset/
+
+      - name: Note about unsigned builds
+        run: |
+          echo "================================================"
+          echo "UNSIGNED IPA NOTE"
+          echo "================================================"
+          echo "A true unsigned IPA still needs the binary compiled for arm64."
+          echo "This runner can compile if a proper .xcodeproj exists."
+          echo "Without a full Xcode project + CODE_SIGNING_ALLOWED=NO, "
+          echo "we cannot produce a working binary here automatically."
+          echo ""
+          echo "Recommended path:"
+          echo "1. Open the sources in Xcode on a Mac"
+          echo "2. Set CODE_SIGNING_ALLOWED = NO (or Ad Hoc)"
+          echo "3. Archive / export, then re-sign with ldid / SideStore / etc."
+          echo "   and inject the App Group entitlement."
+          echo "================================================"
+
+      - name: Upload sources as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GestaltReset-sources
+          path: |
+            GestaltReset/
+            README.md
+            LICENSE
